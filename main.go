@@ -108,7 +108,13 @@ func postImage(db *cl.DB) func(c *gin.Context) {
 		file, err := c.FormFile("image")
 		if err != nil {
 			c.JSON(http.StatusNotAcceptable, gin.H{
-				"message": "Image file is not acceptable",
+				"message": err.Error(),
+			})
+			return
+		}
+		if !strings.HasPrefix(file.Header.Get("Content-Type"), "image/") {
+			c.JSON(http.StatusUnsupportedMediaType, gin.H{
+				"message": "Uploaded file must be an image",
 			})
 			return
 		}
