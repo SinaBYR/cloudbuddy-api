@@ -1,0 +1,19 @@
+{
+	images: [
+		{
+			uuid: string,
+			url: string,
+			likes: int64,
+			created_at: time.Time,
+		}
+	],
+	buddies: [
+		{
+			uuid: string,
+			username: string,
+			fullname: string,
+			passphrase: string,
+			created_at: time.Time,
+		}
+	]
+}
