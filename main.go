@@ -45,6 +45,8 @@ func main() {
 	images.GET("/", getAllImages(db))
 	images.GET("/:id", getImageById(db))
 	images.POST("/", postImage(db))
+	images.PUT("/:id/like", likeImage(db))
+	images.PUT("/:id/dislike", dislikeImage(db))
 
 	r.Run()
 }
@@ -266,4 +268,56 @@ func uploadToBucket(file *multipart.FileHeader, prefix string) error {
 	}
 
 	return nil
+}
+
+func likeImage(db *cl.DB) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		err := db.UpdateById("images", id, func(doc *document.Document) *document.Document {
+			doc.Set("likes", doc.Get("likes").(int64)+1)
+			return doc
+		})
+
+		if err != nil {
+			if err == cl.ErrDocumentNotExist {
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "cloud not found :(",
+				})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "wtf",
+				})
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusNoContent, nil)
+	}
+}
+
+func dislikeImage(db *cl.DB) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		err := db.UpdateById("images", id, func(doc *document.Document) *document.Document {
+			doc.Set("likes", doc.Get("likes").(int64)-1)
+			return doc
+		})
+
+		if err != nil {
+			if err == cl.ErrDocumentNotExist {
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "cloud not found :(",
+				})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "wtf",
+				})
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusNoContent, nil)
+	}
 }
