@@ -27,7 +27,7 @@ type Image struct {
 	UUID      string    `clover:"_id" json:"uuid"`
 	Url       string    `clover:"url" json:"image_url"`
 	Likes     int64     `clover:"likes" json:"likes"`
-	CreatedAt time.Time `clover,json:"created_at" json:"created_at"`
+	CreatedAt time.Time `clover:"created_at" json:"created_at"`
 }
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 func getImageById(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		doc, err := db.FindFirst(q.NewQuery("images").Where(q.Field("uuid").Eq(id)))
+		doc, err := db.FindFirst(q.NewQuery("images").Where(q.Field("_id").Eq(id)))
 
 		if doc == nil {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -75,7 +75,12 @@ func getImageById(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, doc)
+		c.JSON(http.StatusOK, Image{
+			UUID:      doc.Get("_id").(string),
+			Url:       doc.Get("url").(string),
+			Likes:     doc.Get("likes").(int64),
+			CreatedAt: doc.Get("created_at").(time.Time),
+		})
 	}
 }
 
@@ -83,7 +88,16 @@ func getAllImages(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		docs, err := db.FindAll(q.NewQuery("images"))
 
-		fmt.Println(docs)
+		var images []Image
+
+		for _, doc := range docs {
+			images = append(images, Image{
+				UUID:      doc.Get("_id").(string),
+				Url:       doc.Get("url").(string),
+				Likes:     doc.Get("likes").(int64),
+				CreatedAt: doc.Get("created_at").(time.Time),
+			})
+		}
 
 		if err != nil {
 			if err == cl.ErrCollectionNotExist {
@@ -99,7 +113,7 @@ func getAllImages(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, docs)
+		c.JSON(http.StatusOK, images)
 	}
 }
 
@@ -185,7 +199,12 @@ func postImage(db *cl.DB) func(c *gin.Context) {
 			}
 		}
 
-		c.JSON(http.StatusCreated, doc)
+		c.JSON(http.StatusCreated, Image{
+			UUID:      doc.Get("_id").(string),
+			Url:       doc.Get("url").(string),
+			Likes:     doc.Get("likes").(int64),
+			CreatedAt: doc.Get("created_at").(time.Time),
+		})
 	}
 }
 
