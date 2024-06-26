@@ -44,6 +44,7 @@ func main() {
 
 	images.GET("/", getAllImages(db))
 	images.GET("/:id", getImageById(db))
+	images.POST("/", postImage(db))
 
 	r.Run()
 }
@@ -104,6 +105,14 @@ func getAllImages(db *cl.DB) func(c *gin.Context) {
 
 func postImage(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		file, err := c.FormFile("image")
+		if err != nil {
+			c.JSON(http.StatusNotAcceptable, gin.H{
+				"message": "Image file is not acceptable",
+			})
+			return
+		}
+
 		doc := document.NewDocument()
 		doc.Set("url", "")
 		doc.Set("likes", 0)
@@ -113,14 +122,6 @@ func postImage(db *cl.DB) func(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "An error occured while creating a new image record",
-			})
-			return
-		}
-
-		file, err := c.FormFile("image")
-		if err != nil {
-			c.JSON(http.StatusNotAcceptable, gin.H{
-				"message": "Image file is not acceptable",
 			})
 			return
 		}
