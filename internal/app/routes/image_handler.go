@@ -28,16 +28,9 @@ func GetImageById(db *cl.DB) func(c *gin.Context) {
 		}
 
 		if err != nil {
-			if err == cl.ErrDocumentNotExist {
-				c.JSON(http.StatusNotFound, gin.H{
-					"message": "cloud not found :(",
-				})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "wtf",
-				})
-			}
-
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "An unexpected error occured",
+			})
 			return
 		}
 
