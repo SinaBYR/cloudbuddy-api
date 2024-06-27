@@ -25,7 +25,7 @@ func main() {
 
 	images.GET("/", routes.GetAllImages(db))
 	images.GET("/:id", routes.GetImageById(db))
-	images.POST("/", middleware.DecodeJwtMiddleware(), routes.PostImage(db))
+	images.POST("/", middleware.DecodeJwtMiddleware(db), routes.PostImage(db))
 	images.PUT("/:id/like", routes.LikeImage(db))
 	images.PUT("/:id/dislike", routes.DislikeImage(db))
 

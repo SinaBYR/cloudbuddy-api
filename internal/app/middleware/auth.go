@@ -13,7 +13,7 @@ import (
 	cl "github.com/ostafen/clover/v2"
 )
 
-func DecodeJwtMiddleware() gin.HandlerFunc {
+func DecodeJwtMiddleware(db *cl.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := godotenv.Load()
 		if err != nil {
@@ -67,9 +67,7 @@ func DecodeJwtMiddleware() gin.HandlerFunc {
 				return
 			}
 
-			// find the user with token Subject
-			db, _ := cl.Open("clover-db")
-			defer db.Close()
+			// find the user with token Subject (userId)
 			user, err := db.FindById("users", claims["sub"].(string))
 
 			if err != nil {
