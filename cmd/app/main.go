@@ -14,6 +14,9 @@ func main() {
 	if has, _ := db.HasCollection("images"); !has {
 		db.CreateCollection("images")
 	}
+	if has, _ := db.HasCollection("users"); !has {
+		db.CreateCollection("users")
+	}
 
 	r := gin.Default()
 
@@ -24,6 +27,9 @@ func main() {
 	images.POST("/", routes.PostImage(db))
 	images.PUT("/:id/like", routes.LikeImage(db))
 	images.PUT("/:id/dislike", routes.DislikeImage(db))
+
+	auth := r.Group("/v1/auth")
+	auth.POST("/signup", routes.Signup(db))
 
 	r.Run()
 }
