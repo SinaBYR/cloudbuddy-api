@@ -151,11 +151,12 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 		}
 
 		url := strings.Join([]string{
-			os.Getenv("BUCKET_ENDPOINT"),
-			os.Getenv("BUCKET_NAME"),
-			"cloudbuddy",
+			os.Getenv("BUCKET_ENDPOINT") + "/" + os.Getenv("BUCKET_NAME"),
+			"/cloudbuddy/",
+			docId,
+			"-",
 			file.Filename,
-		}, "/")
+		}, "")
 
 		err = db.UpdateById("images", docId, func(doc *document.Document) *document.Document {
 			doc.Set("url", url)
@@ -179,7 +180,7 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 
 		c.JSON(http.StatusCreated, pkg.Image{
 			UUID:      doc.Get("_id").(string),
-			Url:       doc.Get("url").(string),
+			Url:       url,
 			UserId:    doc.Get("user_id").(string),
 			Likes:     doc.Get("likes").(int64),
 			CreatedAt: doc.Get("created_at").(time.Time),
