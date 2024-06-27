@@ -92,9 +92,19 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
+		user, exists := c.Get("user")
+
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			return
+		}
+
 		doc := document.NewDocument()
 		doc.Set("url", "")
 		doc.Set("likes", 0)
+		doc.Set("user_id", user.(pkg.User).UUID)
 		doc.Set("created_at", time.Now())
 		docId, err := db.InsertOne("images", doc)
 
@@ -161,6 +171,7 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 		c.JSON(http.StatusCreated, pkg.Image{
 			UUID:      doc.Get("_id").(string),
 			Url:       doc.Get("url").(string),
+			UserId:    doc.Get("user_id").(string),
 			Likes:     doc.Get("likes").(int64),
 			CreatedAt: doc.Get("created_at").(time.Time),
 		})
