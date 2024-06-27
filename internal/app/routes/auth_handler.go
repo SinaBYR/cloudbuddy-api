@@ -9,6 +9,7 @@ import (
 	cl "github.com/ostafen/clover/v2"
 	"github.com/ostafen/clover/v2/document"
 	q "github.com/ostafen/clover/v2/query"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Signup(db *cl.DB) func(c *gin.Context) {
@@ -87,6 +88,86 @@ func Signup(db *cl.DB) func(c *gin.Context) {
 			"uuid":       newUserId,
 			"username":   newUser.Get("username"),
 			"created_at": newUser.Get("created_at"),
+			"token":      token,
+		})
+	}
+}
+
+func Signin(db *cl.DB) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		username := c.PostForm("username")
+		passphrase := c.PostForm("passphrase")
+
+		if username == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "username is required",
+			})
+			return
+		}
+		if passphrase == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "passphrase is required",
+			})
+			return
+		}
+		// validate password
+		if len(passphrase) < 8 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "passphrase must be at least 8 characters long",
+			})
+			return
+		}
+
+		user, err := db.FindFirst(q.NewQuery("users").Where(q.Field("username").Eq(username)))
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "An error occurred on the server",
+			})
+			return
+		}
+
+		if user == nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "username or passphrase is incorrect",
+			})
+			return
+		}
+
+		match, err := pkg.CheckHashPassword(passphrase, user.Get("passphrase").(string))
+		if err != nil {
+			if err == bcrypt.ErrMismatchedHashAndPassword {
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "username or password is incorrect",
+				})
+				return
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "An error occurred on the server",
+				})
+				return
+			}
+		}
+
+		if !match {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "username or passphrase is incorrect",
+			})
+			return
+		}
+
+		token, err := pkg.GenerateJwtToken(user.Get("_id").(string))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "An error occurred while generating jwt token",
+			})
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"uuid":       user.Get("_id").(string),
+			"username":   user.Get("username"),
+			"created_at": user.Get("created_at"),
 			"token":      token,
 		})
 	}

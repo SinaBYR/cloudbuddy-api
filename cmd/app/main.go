@@ -30,6 +30,7 @@ func main() {
 
 	auth := r.Group("/v1/auth")
 	auth.POST("/signup", routes.Signup(db))
+	auth.POST("/signin", routes.Signin(db))
 
 	r.Run()
 }
