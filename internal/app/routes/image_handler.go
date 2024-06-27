@@ -101,10 +101,19 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
+		userId, ok := user.(*document.Document).Get("_id").(string)
+
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Something went wrong on the server",
+			})
+			return
+		}
+
 		doc := document.NewDocument()
 		doc.Set("url", "")
 		doc.Set("likes", 0)
-		doc.Set("user_id", user.(pkg.User).UUID)
+		doc.Set("user_id", userId)
 		doc.Set("created_at", time.Now())
 		docId, err := db.InsertOne("images", doc)
 
