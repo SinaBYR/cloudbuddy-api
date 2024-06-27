@@ -84,6 +84,9 @@ func Signup(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("Authorization", token, 3600*24*7, "", "", false, true)
+
 		c.JSON(http.StatusCreated, gin.H{
 			"uuid":       newUserId,
 			"username":   newUser.Get("username"),
@@ -163,6 +166,9 @@ func Signin(db *cl.DB) func(c *gin.Context) {
 			})
 			return
 		}
+
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("Authorization", token, 3600*24*7, "", "", false, true)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"uuid":       user.Get("_id").(string),
