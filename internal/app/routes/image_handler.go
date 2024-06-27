@@ -238,3 +238,53 @@ func DislikeImage(db *cl.DB) func(c *gin.Context) {
 		c.JSON(http.StatusNoContent, nil)
 	}
 }
+
+func DeleteImage(db *cl.DB) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		user, exists := c.Get("user")
+
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			return
+		}
+
+		userId, ok := user.(*document.Document).Get("_id").(string)
+
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Something went wrong on the server",
+			})
+			return
+		}
+
+		image, err := db.FindFirst(q.NewQuery("images").Where(q.Field("_id").Eq(id).And(q.Field("user_id").Eq(userId))))
+		if image == nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "image not found",
+			})
+			return
+		}
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "something went wrong on the server",
+			})
+			return
+		}
+
+		// TODO delete image from bucket
+
+		err = db.DeleteById("images", image.ObjectId())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "something went wrong on the server while deleting the image",
+			})
+			return
+		}
+
+		c.JSON(http.StatusNoContent, nil)
+	}
+}
