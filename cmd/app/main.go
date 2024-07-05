@@ -4,6 +4,7 @@ import (
 	"cloudbuddy/internal/app/middleware"
 	"cloudbuddy/internal/app/routes"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	cl "github.com/ostafen/clover/v2"
 )
@@ -22,8 +23,9 @@ func main() {
 	r := gin.Default()
 
 	images := r.Group("/v1/images")
+	images.Use(cors.Default())
 
-	images.GET("/", routes.GetAllImages(db))
+	images.GET("", routes.GetAllImages(db))
 	images.GET("/:id", routes.GetImageById(db))
 	images.POST("/", middleware.DecodeJwtMiddleware(db), routes.PostImage(db))
 	images.PUT("/:id/like", routes.LikeImage(db))

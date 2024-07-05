@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,7 +46,12 @@ func GetImageById(db *cl.DB) func(c *gin.Context) {
 
 func GetAllImages(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		docs, err := db.FindAll(q.NewQuery("images"))
+		offsetQuery := c.Query("offset")
+		offset, err := strconv.Atoi(offsetQuery)
+		if err != nil {
+			offset = 0
+		}
+		docs, err := db.FindAll(q.NewQuery("images").Sort(q.SortOption{Field: "created_at", Direction: -1}).Skip(offset).Limit(5))
 
 		var images []pkg.Image
 
@@ -54,6 +60,7 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 				UUID:      doc.Get("_id").(string),
 				Url:       doc.Get("url").(string),
 				Likes:     doc.Get("likes").(int64),
+				UserId:    doc.Get("user_id").(string),
 				CreatedAt: doc.Get("created_at").(time.Time),
 			})
 		}

@@ -4,6 +4,7 @@
 			uuid: string,
 			url: string,
 			likes: int64,
+			user_id: string
 			created_at: time.Time,
 		}
 	],
