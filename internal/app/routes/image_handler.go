@@ -16,6 +16,8 @@ import (
 	q "github.com/ostafen/clover/v2/query"
 )
 
+var ImagesCount = -1
+
 func GetImageById(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -48,10 +50,19 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		offsetQuery := c.Query("offset")
 		offset, err := strconv.Atoi(offsetQuery)
+		limit := 5
 		if err != nil {
 			offset = 0
 		}
-		docs, err := db.FindAll(q.NewQuery("images").Sort(q.SortOption{Field: "created_at", Direction: -1}).Skip(offset).Limit(5))
+		docs, err := db.FindAll(q.NewQuery("images").Sort(q.SortOption{Field: "created_at", Direction: -1}).Skip(offset).Limit(limit))
+		if ImagesCount == -1 {
+			count, err := db.Count(q.NewQuery("images"))
+			if err != nil {
+				log.Println(err)
+			} else {
+				ImagesCount = count
+			}
+		}
 
 		var images []pkg.Image
 
@@ -79,7 +90,10 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, images)
+		c.JSON(http.StatusOK, gin.H{
+			"images": images,
+			"count":  ImagesCount,
+		})
 	}
 }
 
