@@ -23,7 +23,7 @@ func GenerateJwtToken(userId string) (string, error) {
 	// Generate a JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": userId,
-		"exp": time.Now().Add(time.Hour * 24 * 7).Unix(),
+		"exp": time.Now().Add(time.Hour*24*7).Unix() * 1000,
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
