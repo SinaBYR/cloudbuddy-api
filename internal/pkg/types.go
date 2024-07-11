@@ -12,7 +12,7 @@ type Image struct {
 
 type User struct {
 	UUID       string    `clover:"_id" json:"uuid"`
-	Username   string    `clover:"url" json:"username"`
+	Username   string    `clover:"username" json:"username"`
 	Fullname   string    `clover:"fullname" json:"fullname"`
 	Passphrase string    `clover:"passphrase" json:"-"`
 	CreatedAt  time.Time `clover:"created_at" json:"created_at"`
