@@ -98,30 +98,40 @@ func Signup(db *cl.DB) func(c *gin.Context) {
 
 func Signin(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		username := c.PostForm("username")
-		passphrase := c.PostForm("passphrase")
+		var credentials struct {
+			Username   string `json:"username"`
+			Passphrase string `json:"passphrase"`
+		}
 
-		if username == "" {
+		err := c.BindJSON(&credentials)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+
+		if credentials.Username == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "username is required",
 			})
 			return
 		}
-		if passphrase == "" {
+		if credentials.Passphrase == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "passphrase is required",
 			})
 			return
 		}
 		// validate password
-		if len(passphrase) < 8 {
+		if len(credentials.Passphrase) < 8 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "passphrase must be at least 8 characters long",
 			})
 			return
 		}
 
-		user, err := db.FindFirst(q.NewQuery("users").Where(q.Field("username").Eq(username)))
+		user, err := db.FindFirst(q.NewQuery("users").Where(q.Field("username").Eq(credentials.Username)))
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -137,7 +147,7 @@ func Signin(db *cl.DB) func(c *gin.Context) {
 			return
 		}
 
-		match, err := pkg.CheckHashPassword(passphrase, user.Get("passphrase").(string))
+		match, err := pkg.CheckHashPassword(credentials.Passphrase, user.Get("passphrase").(string))
 		if err != nil {
 			if err == bcrypt.ErrMismatchedHashAndPassword {
 				c.JSON(http.StatusNotFound, gin.H{
