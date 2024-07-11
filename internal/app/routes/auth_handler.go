@@ -183,6 +183,7 @@ func Signin(db *cl.DB) func(c *gin.Context) {
 		c.JSON(http.StatusCreated, gin.H{
 			"uuid":       user.Get("_id").(string),
 			"username":   user.Get("username"),
+			"fullname":   user.Get("fullname"),
 			"created_at": user.Get("created_at"),
 			"token":      token,
 		})
