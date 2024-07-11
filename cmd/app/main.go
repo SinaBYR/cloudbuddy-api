@@ -21,9 +21,8 @@ func main() {
 	}
 
 	r := gin.Default()
-
+	r.Use(cors.Default())
 	images := r.Group("/v1/images")
-	images.Use(cors.Default())
 
 	images.GET("", routes.GetAllImages(db))
 	images.GET("/:id", routes.GetImageById(db))
