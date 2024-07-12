@@ -1,10 +1,12 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -33,13 +35,23 @@ func DecodeJwtMiddleware(db *cl.DB) gin.HandlerFunc {
 			return
 		}
 
-		tokenString, err := c.Cookie("Authorization")
-		if err != nil {
+		authorizationHeader := c.GetHeader("Authorization")
+		if authorizationHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": "unauthorized",
+				"message": "Authorization header missing",
 			})
 			return
 		}
+
+		bearerToken := strings.Split(authorizationHeader, " ")
+		if len(bearerToken) != 2 || strings.ToLower(bearerToken[0]) != "bearer" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "Invalid Authorization header format",
+			})
+			return
+		}
+
+		tokenString := bearerToken[1]
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// validate the alg is what you expect:
@@ -51,11 +63,19 @@ func DecodeJwtMiddleware(db *cl.DB) gin.HandlerFunc {
 		})
 
 		if err != nil {
-			log.Printf("jwt token parsing failed: %v", err)
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"message": "An unexpected error occured on the server",
-			})
-			return
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				log.Printf("jwt token parsing failed: %v", err)
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"message": "Authorization token is expired",
+				})
+				return
+			} else {
+				log.Printf("jwt token parsing failed: %t", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"message": "An unexpected error occured on the server",
+				})
+				return
+			}
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
