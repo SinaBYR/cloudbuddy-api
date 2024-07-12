@@ -3,6 +3,7 @@ package main
 import (
 	"cloudbuddy/internal/app/middleware"
 	"cloudbuddy/internal/app/routes"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -21,12 +22,19 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	images := r.Group("/v1/images")
 
 	images.GET("", routes.GetAllImages(db))
 	images.GET("/:id", routes.GetImageById(db))
-	images.POST("/", middleware.DecodeJwtMiddleware(db), routes.PostImage(db))
+	images.POST("", middleware.DecodeJwtMiddleware(db), routes.PostImage(db))
 	images.PUT("/:id/like", routes.LikeImage(db))
 	images.PUT("/:id/dislike", routes.DislikeImage(db))
 	images.DELETE("/:id", middleware.DecodeJwtMiddleware(db), routes.DeleteImage(db))
