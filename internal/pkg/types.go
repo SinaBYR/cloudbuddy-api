@@ -4,6 +4,7 @@ import "time"
 
 type Image struct {
 	UUID      string    `clover:"_id" json:"uuid"`
+	Title     string    `clover:"title" json:"title"`
 	Url       string    `clover:"url" json:"image_url"`
 	Likes     int64     `clover:"likes" json:"likes"`
 	UserId    string    `clover:"user_id" json:"user_id"`

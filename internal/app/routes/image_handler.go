@@ -39,8 +39,10 @@ func GetImageById(db *cl.DB) func(c *gin.Context) {
 
 		c.JSON(http.StatusOK, pkg.Image{
 			UUID:      doc.Get("_id").(string),
+			Title:     doc.Get("title").(string),
 			Url:       doc.Get("url").(string),
 			Likes:     doc.Get("likes").(int64),
+			UserId:    doc.Get("user_id").(string),
 			CreatedAt: doc.Get("created_at").(time.Time),
 		})
 	}
@@ -69,6 +71,7 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 		for _, doc := range docs {
 			images = append(images, pkg.Image{
 				UUID:      doc.Get("_id").(string),
+				Title:     doc.Get("title").(string),
 				Url:       doc.Get("url").(string),
 				Likes:     doc.Get("likes").(int64),
 				UserId:    doc.Get("user_id").(string),
@@ -99,6 +102,13 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 
 func PostImage(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		title := c.PostForm("title")
+		if title == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Image title is missing",
+			})
+			return
+		}
 		file, err := c.FormFile("image")
 		if err != nil {
 			c.JSON(http.StatusNotAcceptable, gin.H{
@@ -132,6 +142,7 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 		}
 
 		doc := document.NewDocument()
+		doc.Set("title", title)
 		doc.Set("url", "")
 		doc.Set("likes", 0)
 		doc.Set("user_id", userId)
@@ -201,6 +212,7 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 
 		c.JSON(http.StatusCreated, pkg.Image{
 			UUID:      doc.Get("_id").(string),
+			Title:     doc.Get("title").(string),
 			Url:       url,
 			UserId:    doc.Get("user_id").(string),
 			Likes:     doc.Get("likes").(int64),
