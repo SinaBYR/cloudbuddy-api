@@ -48,6 +48,9 @@ func GetImageById(db *cl.DB) func(c *gin.Context) {
 	}
 }
 
+// returns all images.
+// limit default is 5.
+// offset default is 0.
 func GetAllImages(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		offsetQuery := c.Query("offset")
@@ -210,6 +213,8 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 			}
 		}
 
+		ImagesCount += 1
+
 		c.JSON(http.StatusCreated, pkg.Image{
 			UUID:      doc.Get("_id").(string),
 			Title:     doc.Get("title").(string),
@@ -318,6 +323,8 @@ func DeleteImage(db *cl.DB) func(c *gin.Context) {
 			})
 			return
 		}
+
+		ImagesCount -= 1
 
 		c.JSON(http.StatusNoContent, nil)
 	}
