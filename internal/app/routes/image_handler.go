@@ -66,7 +66,7 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 			}
 		}
 
-		var images []pkg.Image
+		var images []pkg.Image = []pkg.Image{}
 
 		for _, doc := range docs {
 			images = append(images, pkg.Image{
