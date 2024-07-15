@@ -106,12 +106,6 @@ func GetAllImages(db *cl.DB) func(c *gin.Context) {
 func PostImage(db *cl.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		title := c.PostForm("title")
-		if title == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Image title is missing",
-			})
-			return
-		}
 		file, err := c.FormFile("image")
 		if err != nil {
 			c.JSON(http.StatusNotAcceptable, gin.H{
