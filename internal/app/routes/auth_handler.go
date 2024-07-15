@@ -65,6 +65,8 @@ func Signup(db *cl.DB) func(c *gin.Context) {
 		newUser := document.NewDocument()
 		newUser.Set("username", username)
 		newUser.Set("passphrase", hashedPassphrase)
+		newUser.Set("fullname", "") // TODO set fullname
+		newUser.Set("images", []string{})
 		newUser.Set("created_at", time.Now())
 
 		newUserId, err := db.InsertOne("users", newUser)
@@ -90,6 +92,7 @@ func Signup(db *cl.DB) func(c *gin.Context) {
 		c.JSON(http.StatusCreated, gin.H{
 			"uuid":       newUserId,
 			"username":   newUser.Get("username"),
+			"fullname":   newUser.Get("fullname"),
 			"created_at": newUser.Get("created_at"),
 			"token":      token,
 		})
