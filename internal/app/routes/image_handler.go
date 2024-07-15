@@ -210,9 +210,11 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 		ImagesCount += 1
 
 		err = db.UpdateById("users", userId, func(doc *document.Document) *document.Document {
-			newImageId := doc.Get("_id").(string)
-			images := doc.Get("images").([]string)
-			images = append(images, newImageId)
+			images, ok := doc.Get("images").([]string)
+			if !ok {
+				images = []string{}
+			}
+			images = append(images, docId)
 			doc.Set("images", images)
 			return doc
 		})
@@ -336,7 +338,10 @@ func DeleteImage(db *cl.DB) func(c *gin.Context) {
 		ImagesCount -= 1
 
 		err = db.UpdateById("images", id, func(doc *document.Document) *document.Document {
-			images := doc.Get("images").([]string)
+			images, ok := doc.Get("images").([]string)
+			if !ok {
+				images = []string{}
+			}
 			images = pkg.RemoveByValue(images, image.ObjectId())
 			doc.Set("images", images)
 			return doc
