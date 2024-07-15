@@ -209,6 +209,14 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 
 		ImagesCount += 1
 
+		db.UpdateById("users", userId, func(doc *document.Document) *document.Document {
+			newImageId := doc.Get("_id").(string)
+			images := doc.Get("images").([]string)
+			images = append(images, newImageId)
+			doc.Set("images", images)
+			return doc
+		})
+
 		c.JSON(http.StatusCreated, pkg.Image{
 			UUID:      doc.Get("_id").(string),
 			Title:     doc.Get("title").(string),
