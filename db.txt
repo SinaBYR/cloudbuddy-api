@@ -4,17 +4,18 @@
 			uuid: string,
 			url: string,
 			likes: int64,
-			user_id: string
-			created_at: time.Time,
+			user_id: string,
+			created_at: time.Time
 		}
 	],
-	buddies: [
+	users: [
 		{
 			uuid: string,
 			username: string,
 			fullname: string,
 			passphrase: string,
 			created_at: time.Time,
+			images: Image[]
 		}
 	]
 }
