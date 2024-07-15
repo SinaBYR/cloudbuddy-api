@@ -16,6 +16,6 @@ type User struct {
 	Username   string    `clover:"username" json:"username"`
 	Fullname   string    `clover:"fullname" json:"fullname"`
 	Passphrase string    `clover:"passphrase" json:"-"`
-	Images     []Image   `clover:"images" json:"-"`
+	Images     []string  `clover:"images" json:"images"`
 	CreatedAt  time.Time `clover:"created_at" json:"created_at"`
 }
