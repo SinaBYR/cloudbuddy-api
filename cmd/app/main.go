@@ -37,6 +37,7 @@ func main() {
 	images.POST("", middleware.DecodeJwtMiddleware(db), routes.PostImage(db))
 	images.PUT("/:id/like", routes.LikeImage(db))
 	images.PUT("/:id/dislike", routes.DislikeImage(db))
+	images.PUT(":id/changeTitle", middleware.DecodeJwtMiddleware(db), routes.ChangeImageTitle(db))
 	images.DELETE("/:id", middleware.DecodeJwtMiddleware(db), routes.DeleteImage(db))
 
 	auth := r.Group("/v1/auth")

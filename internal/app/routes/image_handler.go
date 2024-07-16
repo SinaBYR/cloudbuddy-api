@@ -364,3 +364,48 @@ func DeleteImage(db *cl.DB) func(c *gin.Context) {
 		c.JSON(http.StatusNoContent, nil)
 	}
 }
+
+func ChangeImageTitle(db *cl.DB) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+		title := c.PostForm("title")
+		user, exists := c.Get("user")
+
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			return
+		}
+
+		userId, ok := user.(*document.Document).Get("_id").(string)
+
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "unauthorized",
+			})
+			return
+		}
+
+		err := db.UpdateFunc(q.NewQuery("images").Where(q.Field("_id").Eq(id).And(q.Field("user_id").Eq(userId))), func(doc *document.Document) *document.Document {
+			doc.Set("title", title)
+			return doc
+		})
+
+		if err != nil {
+			if err == cl.ErrDocumentNotExist {
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "cloud not found :(",
+				})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "wtf",
+				})
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusNoContent, nil)
+	}
+}
