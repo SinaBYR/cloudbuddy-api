@@ -1,5 +1,21 @@
 package pkg
 
+import "fmt"
+
+func ConvertInterfaceSliceToX[T comparable](slice []interface{}) ([]T, bool) {
+	var assertedSlice []T
+	for _, value := range slice {
+		assertedValue, ok := value.(T)
+		if !ok {
+			fmt.Println("Type assertion of element to given type failed")
+			return nil, false
+		}
+		assertedSlice = append(assertedSlice, assertedValue)
+	}
+
+	return assertedSlice, true
+}
+
 func RemoveByValue[T comparable](slice []T, value T) []T {
 	for i, v := range slice {
 		if v == value {
