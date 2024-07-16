@@ -2,8 +2,8 @@ package pkg
 
 import "fmt"
 
-func ConvertInterfaceSliceToX[T comparable](slice []interface{}) ([]T, bool) {
-	var assertedSlice []T
+func ConvertInterfaceSliceToXSlice[T comparable](slice []interface{}) ([]T, bool) {
+	var assertedSlice []T = []T{}
 	for _, value := range slice {
 		assertedValue, ok := value.(T)
 		if !ok {
