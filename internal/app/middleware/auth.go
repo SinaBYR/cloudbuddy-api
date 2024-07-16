@@ -89,6 +89,12 @@ func DecodeJwtMiddleware(db *cl.DB) gin.HandlerFunc {
 
 			// find the user with token Subject (userId)
 			user, err := db.FindById("users", claims["sub"].(string))
+			if user == nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"message": "user corresponding to token not found",
+				})
+				return
+			}
 
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
