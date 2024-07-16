@@ -210,12 +210,15 @@ func PostImage(db *cl.DB) func(c *gin.Context) {
 		ImagesCount += 1
 
 		err = db.UpdateById("users", userId, func(doc *document.Document) *document.Document {
-			images, ok := doc.Get("images").([]string)
+			interfaceSlice := doc.Get("images").([]interface{})
+			imageSlice, ok := pkg.ConvertInterfaceSliceToXSlice[string](interfaceSlice)
 			if !ok {
-				images = []string{}
+				log.Printf("Appending image _id to user.images failed (image _id: %s), (user _id: %s)", docId, userId)
+				return doc
 			}
-			images = append(images, docId)
-			doc.Set("images", images)
+
+			imageSlice = append(imageSlice, docId)
+			doc.Set("images", imageSlice)
 			return doc
 		})
 
@@ -337,17 +340,21 @@ func DeleteImage(db *cl.DB) func(c *gin.Context) {
 
 		ImagesCount -= 1
 
-		err = db.UpdateById("images", id, func(doc *document.Document) *document.Document {
-			images, ok := doc.Get("images").([]string)
+		err = db.UpdateById("users", userId, func(doc *document.Document) *document.Document {
+			interfaceSlice := doc.Get("images").([]interface{})
+			imageSlice, ok := pkg.ConvertInterfaceSliceToXSlice[string](interfaceSlice)
 			if !ok {
-				images = []string{}
+				log.Printf("Removing image _id from user.images failed (image _id: %s), (user _id: %s)", image.ObjectId(), userId)
+				return doc
 			}
-			images = pkg.RemoveByValue(images, image.ObjectId())
-			doc.Set("images", images)
+
+			imageSlice = pkg.RemoveByValue(imageSlice, image.ObjectId())
+			doc.Set("images", imageSlice)
 			return doc
 		})
 
 		if err != nil {
+			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "An error occured",
 			})
